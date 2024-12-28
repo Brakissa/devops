@@ -1,0 +1,41 @@
+services:
+  db:
+    build: ./database
+    image: kiss04/gestion-produits-mysql:latest
+    container_name: db
+    environment:
+      MYSQL_DATABASE: db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  php-app:
+    build: ./www
+    image: kiss04/gestion-produits-php5:latest
+    container_name: php-app
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_NAME: gestion_produits
+      DB_USER: root
+      DB_PASSWORD: root
+    ports:
+      - "${APP_PORT:-8000}:80"
+    depends_on:
+      - db
+    volumes:
+      - saved_uploads:/var/www/html/uploads
+    networks:
+      - app-network
+
+volumes:
+  saved_uploads:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
